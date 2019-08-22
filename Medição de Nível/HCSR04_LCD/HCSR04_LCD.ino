@@ -1,6 +1,8 @@
 #include <LiquidCrystal.h> 
 #include <DHT.h>
 #include <Average.h>
+#include <SD.h>
+#include <SPI.h>
 
 #define trigPin PB6
 #define echoPin PB7
@@ -13,11 +15,15 @@ LiquidCrystal lcd(rs, en, d4, d5, d6, d7); //Initialize the LCD
 
 DHT dht(DHTPIN, DHTTYPE);
 
+File sdCard;
+
 long duration;
 int distance;
 float divisor, distancia_cm;
 float h, t;
 int i, distancia_int;
+
+String sdFileName = "HCSR04_ensaio_1.txt";
 
 float media = 0;
 
@@ -28,6 +34,7 @@ void setup()
   Serial.begin(9600); // Starts the serial communication
   dht.begin();
   lcd.begin(16, 2);
+  SD.begin()
 }
 
 void loop()
@@ -47,6 +54,13 @@ void loop()
   }
   
   Serial.println(String("Distância: " + String(ave.mode())));
+  
+  sdCard = SD.open(sdFileName, FILE_WRITE);// abre o arquivo de texto onde são salvas as informações;
+  
+  if (sdCard) {
+    sdCard.println(String("Distancia: " + distancia_int + " cm"));
+    sdCard.close(); // fecha o arquivo de texto.
+  }
   delay(10);
 }
     
