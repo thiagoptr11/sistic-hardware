@@ -25,7 +25,7 @@ void setup()
   pinMode(echoPin, INPUT); // Sets the echoPin as an Input
   Serial.begin(9600); // Starts the serial communication
   dht.begin();
-  SD.begin()
+  SD.begin();
 }
 
 void loop()
@@ -55,7 +55,7 @@ void saveToSD(int valor){
   sdCard = SD.open(sdFileName, FILE_WRITE);// abre o arquivo de texto onde são salvas as informações;
   
   if (sdCard) {
-    sdCard.println(String("Distancia: " + valor + " cm"));
+    sdCard.println(String("Distancia: " + String(valor) + " cm"));
     sdCard.close(); // fecha o arquivo de texto.
   }
 }
