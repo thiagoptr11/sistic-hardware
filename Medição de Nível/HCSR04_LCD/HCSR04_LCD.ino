@@ -4,14 +4,11 @@
 #include <SD.h>
 #include <SPI.h>
 
-#define trigPin PB6
-#define echoPin PB7
-#define DHTPIN PB8
+#define DHTPIN 7
 #define DHTTYPE DHT22
 #define amostra 500
 
-const int rs = PB11, en = PB10, d4 = PB0, d5 = PB1, d6 = PC13, d7 = PC14; //mention the pin names to with LCD is connected to 
-LiquidCrystal lcd(rs, en, d4, d5, d6, d7); //Initialize the LCD
+
 
 DHT dht(DHTPIN, DHTTYPE);
 
@@ -29,12 +26,11 @@ float media = 0;
 
 void setup()
 {
-  pinMode(trigPin, OUTPUT); // Sets the trigPin as an Output
-  pinMode(echoPin, INPUT); // Sets the echoPin as an Input
+  
   Serial.begin(9600); // Starts the serial communication
   dht.begin();
-  lcd.begin(16, 2);
-  SD.begin()
+  
+  SD.begin();
 }
 
 void loop()
@@ -57,10 +53,7 @@ void loop()
   
   sdCard = SD.open(sdFileName, FILE_WRITE);// abre o arquivo de texto onde são salvas as informações;
   
-  if (sdCard) {
-    sdCard.println(String("Distancia: " + distancia_int + " cm"));
-    sdCard.close(); // fecha o arquivo de texto.
-  }
+ 
   delay(10);
 }
     
@@ -68,11 +61,7 @@ void mostrarValores(float valor){
 
   Serial.println(valor);
   
-  lcd.setCursor(0, 0); //At first row first column 
-  lcd.print("Distancia:"); //Print this
-  
-  lcd.setCursor(0, 1); //At secound row first column 
-  lcd.print(valor); //Print the value of secounds
+ 
 }
 
 float mediaTemperatura(){
@@ -91,18 +80,5 @@ float mediaTemperatura(){
     return t;
 }
 
-float calcularDistancia(float divisor)
-{
-  digitalWrite(trigPin, LOW);
-  delayMicroseconds(2);
-  digitalWrite(trigPin, HIGH);
-  delayMicroseconds(10);
-  digitalWrite(trigPin, LOW);
-  int tempo = pulseIn(echoPin, HIGH);
-  
-  float distancia_cm = (tempo / divisor) / 2;
-
-  return distancia_cm;
-}
 
   

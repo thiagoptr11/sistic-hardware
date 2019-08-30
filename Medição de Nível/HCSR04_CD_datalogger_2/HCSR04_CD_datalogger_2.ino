@@ -18,18 +18,13 @@
 #define echoPin 5
 #define DHTPIN 7
 #define DHTTYPE DHT22
-#define amostra 100
 
 DHT dht(DHTPIN, DHTTYPE);
 
 File sdCard;
 
-long duration;
-float divisor, distancia_cm, h, t, media = 0;
-int i, distancia_int;
-
-
-String sdFileName = "HCSR04_3.txt";
+String sdFileName = "HCSR04_2.txt";
+int amostra = 100;
 
 void setup()
 {
@@ -58,25 +53,37 @@ void loop()
 {
   int v[100], cont[100];
   delay(6000);
-  float te = dht.readTemperature();
-
-  Serial.println(te);
   
-  divisor = 10000/(sqrt((te+273.15)/273.15) * 331.45);   
+  float te = mediaTemperatura();
+  
+  Serial.print("Temperatura: ");
+  Serial.print(te);
+  Serial.println(" *C");
+  
+  float divisor = 10000/(sqrt((te+273.15)/273.15) * 331.45); 
       
-  for(int i = 0; i < amostra; i++)
+  for(int i = 0; i < 100; i++)
   {
-    distancia_cm = calcularDistancia(divisor);
+    float distancia_cm = calcularDistancia(divisor);
 
-    distancia_int = distancia_cm;
+    int distancia_int = int(distancia_cm);
 
     v[i] = distancia_int;
+
+    delay(10);
     
+    //ave.push(distancia_int);
   }
   
   //Serial.println(String("Distância: " + String(ave.mode())));
   int dist = calcularModa (100, v, cont);
   saveToSD(dist);
+  delay(1000);
+  Serial.print("Distância: ");
+  Serial.print(dist);
+  Serial.println(" cm");
+  
+  
   
   delay(10);
 }
@@ -86,19 +93,19 @@ void saveToSD(int valor){
   
   if (sdCard) {
     Serial.println("Salvando no SD card...");
-    Serial.println(valor);
-    sdCard.print("Distancia: ");
-    sdCard.print(valor);
-    sdCard.println(" cm");
+    sdCard.println(String("Distancia: " + String(valor) + " cm"));
     sdCard.close(); // fecha o arquivo de texto.
     Serial.println("DONE");
     Serial.println();
+  }
+  else {
+    Serial.println("FAIL");
   }
 }
 
 float mediaTemperatura(){
   float mediatemperatura = 0, temp;
-  for (int i = 0; i < 100; i++)
+  for (int i = 0; i < amostra; i++)
     {
       temp = dht.readTemperature();
 
@@ -112,7 +119,6 @@ float mediaTemperatura(){
       
       delay(10);
     }
-    Serial.println(mediatemperatura);
     return mediatemperatura;
 }
 
