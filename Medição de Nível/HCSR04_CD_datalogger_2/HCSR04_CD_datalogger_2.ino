@@ -14,44 +14,41 @@
 #define SPI1_NSS_PIN PA4 
 */
 
-#define trigPin 6
-#define echoPin 5
-#define DHTPIN 7
+#define trigPin1 PA9
+#define echoPin1 PA10
+
+#define trigPin2 PB6
+#define echoPin2 PB7
+
+#define trigPin3 PB8
+#define echoPin3 PB9
+
+#define DHTPIN PA8
 #define DHTTYPE DHT22
 
 DHT dht(DHTPIN, DHTTYPE);
 
-File sdCard;
-
-String sdFileName = "HCSR04_2.txt";
 int amostra = 100;
 
 void setup()
 {
   Serial.begin(9600); // Starts the serial communication
- 
-
-  Serial.print("Initializing SD card...");
-
-  if (!SD.begin(8)) {
-    Serial.println("initialization failed!");
-    while (1);
-  }
-  Serial.println("initialization done.");
   
-  pinMode(trigPin, OUTPUT); // Sets the trigPin as an Output
-  pinMode(echoPin, INPUT); // Sets the echoPin as an Input
+  pinMode(trigPin1, OUTPUT); // Sets the trigPin as an Output
+  pinMode(echoPin1, INPUT); // Sets the echoPin as an Input
+  pinMode(trigPin2, OUTPUT); // Sets the trigPin as an Output
+  pinMode(echoPin2, INPUT); // Sets the echoPin as an Input
+  pinMode(trigPin3, OUTPUT); // Sets the trigPin as an Output
+  pinMode(echoPin3, INPUT); // Sets the echoPin as an Input
 
   delay(3000);
   
-  dht.begin();
-
-  
+  dht.begin(); 
 }
 
 void loop()
 {
-  int v[100], cont[100];
+  int v1[100], cont1[100], v2[100], cont2[100], v3[100], cont3[100];
   delay(6000);
   
   float te = mediaTemperatura();
@@ -64,11 +61,17 @@ void loop()
       
   for(int i = 0; i < 100; i++)
   {
-    float distancia_cm = calcularDistancia(divisor);
+    float distancia_cm1 = calcularDistancia(trigPin1, echoPin1, divisor);
+    float distancia_cm2 = calcularDistancia(trigPin2, echoPin2, divisor);
+    float distancia_cm3 = calcularDistancia(trigPin3, echoPin3, divisor);
+    
+    int distancia_int1 = int(distancia_cm1);
+    int distancia_int2 = int(distancia_cm2);
+    int distancia_int3 = int(distancia_cm3);
 
-    int distancia_int = int(distancia_cm);
-
-    v[i] = distancia_int;
+    v1[i] = distancia_int1;
+    v2[i] = distancia_int2;
+    v3[i] = distancia_int3;
 
     delay(10);
     
@@ -76,31 +79,24 @@ void loop()
   }
   
   //Serial.println(String("Distância: " + String(ave.mode())));
-  int dist = calcularModa (100, v, cont);
-  saveToSD(dist);
+  int dist1 = calcularModa (100, v1, cont1);
+  int dist2 = calcularModa (100, v2, cont2);
+  int dist3 = calcularModa (100, v3, cont3);
+
+  int dist = (dist1 + dist2 + dist3)/3;
+
+  Serial.print(dist1);
+  Serial.print(" ");
+  Serial.print(dist2);
+  Serial.print(" ");
+  Serial.println(dist3);
+  
   delay(1000);
   Serial.print("Distância: ");
   Serial.print(dist);
   Serial.println(" cm");
   
-  
-  
   delay(10);
-}
-    
-void saveToSD(int valor){
-  sdCard = SD.open(sdFileName, FILE_WRITE);// abre o arquivo de texto onde são salvas as informações;
-  
-  if (sdCard) {
-    Serial.println("Salvando no SD card...");
-    sdCard.println(String("Distancia: " + String(valor) + " cm"));
-    sdCard.close(); // fecha o arquivo de texto.
-    Serial.println("DONE");
-    Serial.println();
-  }
-  else {
-    Serial.println("FAIL");
-  }
 }
 
 float mediaTemperatura(){
@@ -122,14 +118,14 @@ float mediaTemperatura(){
     return mediatemperatura;
 }
 
-float calcularDistancia(float divisor)
+float calcularDistancia(int trig, int echo, float divisor)
 {
-  digitalWrite(trigPin, LOW);
+  digitalWrite(trig, LOW);
   delayMicroseconds(2);
-  digitalWrite(trigPin, HIGH);
+  digitalWrite(trig, HIGH);
   delayMicroseconds(10);
-  digitalWrite(trigPin, LOW);
-  int tempo = pulseIn(echoPin, HIGH);
+  digitalWrite(trig, LOW);
+  int tempo = pulseIn(echo, HIGH);
   
   float distancia_cm = (tempo / divisor) / 2;
 
